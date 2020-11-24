@@ -2,14 +2,17 @@ import os
 import math
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from flask_autodoc import Autodoc
 
 from g2p import SequiturTool, Translator, loadG2PSample
+from fairseq_g2p import Fairseq_graphemetophoneme as fs_g2p
 
 app = Flask(__name__)
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
-auto = Autodoc(app)
+
+# TODO: only load the sequitur model once
+# TODO: python class template and children for sequitur, fairseq, and thrax?
+# TODO: work with fairseq dialects
 
 
 class Options(dict):
@@ -28,6 +31,10 @@ class Options(dict):
     def __setattr__(self, name, value):
         self[name] = value
 
+grammatek_lstm = fs_g2p()
+
+# def pronounce(words):
+#     return fs_g2p.pronounce(words)
 
 def pronounce(words):
     options = Options(
@@ -73,29 +80,43 @@ def pron_to_tsv(prons):
 
 
 @app.route("/pron/<word>", methods=["GET", "OPTIONS"])
-@auto.doc()
 def route_pronounce(word):
     """Main entry point - Does the important stuff
     """
+    m = request.args.get("m")
+    if m and m == "fairseq":
+        # d = request.args.get("d")
+        # if d and d in grammatek_lstm.possible_dialects:
+        gen_pronounce = grammatek_lstm.pronounce
+    else:
+        gen_pronounce = pronounce
+    # TODO: make fairseq models work with tsv
     t = request.args.get("t")
     if t and t == "tsv":
         return Response(response=pron_to_tsv(pronounce([word])),
                         status=200,
                         content_type="text/tab-separated-values")
 
-    return jsonify(list(pronounce([word]))), 200
+    return jsonify(list(gen_pronounce([word]))), 200
 
 
 @app.route("/pron", methods=["POST", "OPTIONS"])
-@auto.doc()
 def route_pronounce_many():
     content = request.get_json(force=True)
     if "words" not in content:
         return jsonify({"error": "Field 'words' missing."}), 400
 
+    m = request.args.get("m")
+    if m and m == "fairseq":
+        # d = request.args.get("d")
+        # if d and d in grammatek_lstm.possible_dialects:
+        gen_pronounce = grammatek_lstm.pronounce
+    else:
+        gen_pronounce = pronounce
+    # TODO: make fairseq models work with tsv
     t = request.args.get("t")
     if t and t == "tsv":
         return Response(response=pron_to_tsv(pronounce(content["words"])),
                         status=200,
                         content_type="text/tab-separated-values")
-    return jsonify(list(pronounce(content["words"]))), 200
+    return jsonify(list(gen_pronounce(content["words"]))), 200
