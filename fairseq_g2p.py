@@ -84,7 +84,6 @@ def main():
 
     # TODO: add list of requirements necessary, put the models somewhere
     # TODO: callable from app.py
-    # TODO: change filename
 
     # Process phrase to work with g2p functioon
     # TODO: remove punctuation because it affects the output
