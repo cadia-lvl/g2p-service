@@ -2,7 +2,6 @@ flask
 numpy
 gunicorn
 flask-cors
-flask-autodoc
 https://github.com/rkjaran/sequitur-g2p/archive/master.zip
 --find-links https://download.pytorch.org/whl/torch_stable.html
 torch==1.7.0+cpu
