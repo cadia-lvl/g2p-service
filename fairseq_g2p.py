@@ -82,7 +82,6 @@ def words2spaced(normal_words):
 def main():
     torch.hub.list('pytorch/fairseq')  # [..., 'transformer.wmt16.en-de', ... ]
 
-    # TODO: add list of requirements necessary, put the models somewhere
     # TODO: callable from app.py
 
     # Process phrase to work with g2p functioon

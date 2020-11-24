@@ -56,6 +56,7 @@ Append `?t=tsv` to get the response in the Kaldi lexicon format.
 ### Build Docker image
 
     docker build -t g2p-service .
+    docker build -t g2p-service-env . -f Dockerfile.env
     
 ### Run service
 Train, or somehow acquire a Sequitur G2P model expose it to the container as
@@ -63,9 +64,16 @@ Train, or somehow acquire a Sequitur G2P model expose it to the container as
 
     docker run -p 8000:8000 -v <path-to-model>:/app/final.mdl g2p-service
 
+    docker run -it --rm -v <path-to-model>:/app/final.mdl -v <path-to-grammatek-lstm-g2p-repo>:/data/models/g2p/fairseq fairseq-g2p-env python fair_seq.py
+
+
+Example
+    docker run -it --rm -v ${PWD}/final.mdl:/app/final.mdl -v /home/judyfong/g2p-lstm:/data/models/g2p/fairseq fairseq-g2p-env python test.py
+
 ## LICENSE
 
     Copyright (C) 2019  Róbert Kjaran <robert@kjaran.com>
+    Copyright (C) 2020  Judy Y Fong <lvl@judyyfong.xyz>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
