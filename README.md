@@ -1,12 +1,12 @@
 # g2p-service
 
 Naive Flask wrapper for
-[Sequitur](https://github.com/sequitur-g2p/sequitur-g2p). Exposes a simple REST
-API.
+[Sequitur](https://github.com/sequitur-g2p/sequitur-g2p) and [fairseq g2p
+models](https://github.com/grammatek/g2p-lstm). Exposes a simple REST API.
 
 ## Usage
 Example service endpoint for Icelandic available at
-https://nlp.talgreinir.is/pron (courtesy of [Tiro](https://tiro.is))
+https://nlp.talgreinir.is/pron (courtesy of [Tiro](https://tiro.is)) - does not support fairseq
 
 How do I pronounce `derp`?
 
@@ -50,6 +50,30 @@ Multiple word support with a POST.
     ]
     
 Append `?t=tsv` to get the response in the Kaldi lexicon format.
+
+Append ?m=fairseq to use the fairseq model instead of the sequitur model
+
+    $ cat <<EOF | curl -XPOST -d@- https://nlp.talgreinir.is/pron?m=fairseq | jq
+    {"words": ["herp", "derp"]}
+    EOF
+    [
+      {
+        "results": [
+          {
+            "pronunciation": "h E r_0 p"
+          }
+        ],
+        "word": "herp"
+      },
+      {
+        "results": [
+          {
+            "pronunciation": "t E r_0 p"
+          }
+        ],
+        "word": "derp"
+      }
+    ]
 
 ## Steps
 
