@@ -8,19 +8,6 @@ import torch
 from fairseq.models.transformer import TransformerModel
 import os
 
-class Fairseq_g2p_transformer():
-    def __init__(self, modelFile="final.mdl", encoding="UTF-8"):
-        super(Options, self).__init__(modelFile=modelFile, encoding=encoding)
-
-    def __getattr__(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            return None
-
-    def __setattr__(self, name, value):
-        self[name] = value
-
 class Fairseq_graphemetophoneme:
     def __init__(self):
         self.possible_dialects = ['standard', 'north' , 'north_east', 'south']
@@ -68,20 +55,21 @@ class Fairseq_graphemetophoneme:
         # works with c, w, q, and z
         # g2p works with lowercased and capital letters
         # NOTE: punctuation just gives random output so shouldn't allow it to be
-        # passed to self.g2p_fairseq
-        print(self.g2p_fairseq(h_l_a_u_p_a))
+        # passed to self.dialect_models[dialect].translate()
+        dialect = "standard"
+        print(self.dialect_models[dialect].translate(h_l_a_u_p_a))
         # ['l_0 9i: p a']
-        print(self.g2p_fairseq(processed))
+        print(self.dialect_models[dialect].translate(processed))
         # ['l_0 9i: p a', 't E r_0 p']
-        print(self.g2p_fairseq(phrase_spaced))
+        print(self.dialect_models[dialect].translate(phrase_spaced))
         # ['c E l k_h O m I n', 't_h I: l', 'i s t l a n t s']
 
         print('\nnorth')
-        print(self.g2p_fairseq(processed, 'north'))
+        print(self.dialect_models["north"].translate(processed))
         print('\nnorth east')
-        print(self.g2p_fairseq(processed, 'north_east'))
+        print(self.dialect_models["north_east"].translate(processed))
         print('\nsouth')
-        print(self.g2p_fairseq(processed, 'south'))
+        print(self.dialect_models["south"].translate(processed))
 
     # ['hlaupa','orð', 'derp']
     def pronounce(self, word_list, dialect='standard'):
