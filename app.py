@@ -85,8 +85,6 @@ def route_pronounce(word):
     """
     m = request.args.get("m")
     if m and m == "fairseq":
-        # d = request.args.get("d")
-        # if d and d in grammatek_lstm.possible_dialects:
         gen_pronounce = grammatek_lstm.pronounce
     else:
         gen_pronounce = pronounce
@@ -97,6 +95,9 @@ def route_pronounce(word):
                         status=200,
                         content_type="text/tab-separated-values")
 
+    d = request.args.get("d")
+    if d and d in grammatek_lstm.possible_dialects:
+        return jsonify(list(gen_pronounce([word], d))), 200
     return jsonify(list(gen_pronounce([word]))), 200
 
 
@@ -119,4 +120,7 @@ def route_pronounce_many():
         return Response(response=pron_to_tsv(pronounce(content["words"])),
                         status=200,
                         content_type="text/tab-separated-values")
+    d = request.args.get("d")
+    if d and d in grammatek_lstm.possible_dialects:
+        return jsonify(list(gen_pronounce(content["words"], d))), 200
     return jsonify(list(gen_pronounce(content["words"]))), 200
