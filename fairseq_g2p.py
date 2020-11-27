@@ -35,11 +35,6 @@ class Fairseq_graphemetophoneme:
             self.dialect_models[dialect] = \
             TransformerModel.from_pretrained(data_dir, checkpoint_file)
 
-    def g2p_fairseq(self, words, dialect='standard'):
-        """ Load the correct model and give phonemes """
-        # Batched translation
-        return self.dialect_models[dialect].translate(words)
-
     # Function to change 'hlaupa' to 'h l a u p a' etc
     def words2spaced(self, normal_words):
         """
@@ -94,7 +89,8 @@ class Fairseq_graphemetophoneme:
         w_o_r_d_l_i_s_t = self.words2spaced(word_list)
         """ Apply phonemes based on dialect """
         if dialect in self.possible_dialects:
-            word_phones = self.g2p_fairseq(w_o_r_d_l_i_s_t, dialect)
+            word_phones = \
+                self.dialect_models[dialect].translate(w_o_r_d_l_i_s_t)
             fairseq_response = []
             for (phones, word) in zip(word_phones, word_list):
                 fairseq_response.append({
