@@ -12,7 +12,6 @@ CORS(app)
 
 # TODO: only load the sequitur model once
 # TODO: python class template and children for sequitur, fairseq, and thrax?
-# TODO: work with fairseq dialects
 
 
 class Options(dict):
@@ -32,9 +31,6 @@ class Options(dict):
         self[name] = value
 
 grammatek_lstm = fs_g2p()
-
-# def pronounce(words):
-#     return fs_g2p.pronounce(words)
 
 def pronounce(words):
     options = Options(
