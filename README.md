@@ -6,7 +6,8 @@ models](https://github.com/grammatek/g2p-lstm). Exposes a simple REST API.
 
 ## Usage
 Example service endpoint for Icelandic available at
-https://nlp.talgreinir.is/pron (courtesy of [Tiro](https://tiro.is)) - does not support fairseq
+https://nlp.talgreinir.is/pron (courtesy of [Tiro](https://tiro.is)) - does not
+support fairseq
 
 How do I pronounce `derp`?
 
@@ -53,7 +54,7 @@ Append `?t=tsv` to get the response in the Kaldi lexicon format.
 
 Append ?m=fairseq to use the fairseq model instead of the sequitur model
 
-    $ cat <<EOF | curl -XPOST -d@- https://nlp.talgreinir.is/pron?m=fairseq | jq
+    $ cat <<EOF | curl -XPOST -d@- "http://localhost:8000/pron?m=fairseq" | jq
     {"words": ["herp", "derp"]}
     EOF
     [
@@ -75,12 +76,37 @@ Append ?m=fairseq to use the fairseq model instead of the sequitur model
       }
     ]
 
+Append ?d=north to use the northern dialect
+Append ?d=north_east to use the north eastern dialect
+Append ?d=south to use the southern dialect
+
+    $ cat <<EOF | curl -XPOST -d@- "http://localhost:8000/pron?m=fairseq&d=south" | jq
+    {"words": ["herp", "akureyri"]}
+    EOF
+    [
+      {
+        "results": [
+          {
+            "pronunciation": "h E r_0 p"
+          }
+        ],
+        "word": "herp"
+      },
+      {
+        "results": [
+          {
+            "pronunciation": "a: k Y r ei r I"
+          }
+        ],
+        "word": "akureyri"
+      }
+    ]
+
 ## Steps
 
 ### Build Docker image
 
     docker build -t g2p-service .
-    docker build -t g2p-service-env . -f Dockerfile.env
     
 ### Run service
 Train, or somehow acquire a Sequitur G2P model expose it to the container as
@@ -88,11 +114,11 @@ Train, or somehow acquire a Sequitur G2P model expose it to the container as
 
     docker run -p 8000:8000 -v <path-to-model>:/app/final.mdl g2p-service
 
-    docker run -it --rm -v <path-to-model>:/app/final.mdl -v <path-to-grammatek-lstm-g2p-repo>:/data/models/g2p/fairseq fairseq-g2p-env python fair_seq.py
+    docker run -p 8000:8000 -v <path-to-model>:/app/final.mdl -v <path-to-grammatek-lstm-g2p-repo>:/app/fairseq_g2p/ g2p-service
 
 
 Example
-    docker run -it --rm -v ${PWD}/final.mdl:/app/final.mdl -v /home/judyfong/g2p-lstm:/data/models/g2p/fairseq fairseq-g2p-env python test.py
+    docker run -it --rm -v ${PWD}/final.mdl:/app/final.mdl -v /home/judyfong/g2p-lstm:/app/fairseq_g2p g2p-service
 
 ## LICENSE
 
