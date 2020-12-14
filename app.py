@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 
 from g2p import SequiturTool, Translator, loadG2PSample
-from fairseq_g2p import Fairseq_graphemetophoneme as fs_g2p
+from fairseq_g2p import FairseqGraphemeToPhoneme as fs_g2p
 
 app = Flask(__name__)
 app.config["JSON_AS_ASCII"] = False
@@ -15,6 +15,9 @@ CORS(app)
 
 
 class Options(dict):
+    """
+    This class parses and passes options to other classes"
+    """
     def __init__(self, modelFile="final.mdl", encoding="UTF-8",
                  variants_number=4, variants_mass=0.9):
         super(Options, self).__init__(modelFile=modelFile, encoding=encoding,
@@ -30,9 +33,14 @@ class Options(dict):
     def __setattr__(self, name, value):
         self[name] = value
 
-grammatek_lstm = fs_g2p()
+
+GRAMMATEK_LSTM = fs_g2p()
+
 
 def pronounce(words):
+    """
+    Pronounce gives the IPA phonetic transcriptions of the given words.
+    """
     options = Options(
         modelFile=os.getenv("G2P_MODEL", "final.mdl")
     )
@@ -67,6 +75,10 @@ def pronounce(words):
 
 
 def pron_to_tsv(prons):
+    """
+    pron_to_tsv gives the IPA phonetic transcriptions of the given words in a
+    tab separated value format.
+    """
     return "\n".join(
         "{w}\t{prob}\t{pron}".format(w=item["word"],
                                      prob=res["posterior"],
@@ -77,11 +89,12 @@ def pron_to_tsv(prons):
 
 @app.route("/pron/<word>", methods=["GET", "OPTIONS"])
 def route_pronounce(word):
-    """Main entry point - Does the important stuff
+    """
+    Main GET entry point - Does the important stuff
     """
     m = request.args.get("m")
     if m and m == "fairseq":
-        gen_pronounce = grammatek_lstm.pronounce
+        gen_pronounce = GRAMMATEK_LSTM.pronounce
     else:
         gen_pronounce = pronounce
     # TODO: make fairseq models work with tsv
@@ -92,13 +105,16 @@ def route_pronounce(word):
                         content_type="text/tab-separated-values")
 
     d = request.args.get("d")
-    if d and d in grammatek_lstm.possible_dialects:
+    if d and d in GRAMMATEK_LSTM.possible_dialects:
         return jsonify(list(gen_pronounce([word], d))), 200
     return jsonify(list(gen_pronounce([word]))), 200
 
 
 @app.route("/pron", methods=["POST", "OPTIONS"])
 def route_pronounce_many():
+    """
+    Main POST entry point - Does the important stuff
+    """
     content = request.get_json(force=True)
     if "words" not in content:
         return jsonify({"error": "Field 'words' missing."}), 400
@@ -106,8 +122,8 @@ def route_pronounce_many():
     m = request.args.get("m")
     if m and m == "fairseq":
         # d = request.args.get("d")
-        # if d and d in grammatek_lstm.possible_dialects:
-        gen_pronounce = grammatek_lstm.pronounce
+        # if d and d in GRAMMATEK_LSTM.possible_dialects:
+        gen_pronounce = GRAMMATEK_LSTM.pronounce
     else:
         gen_pronounce = pronounce
     # TODO: make fairseq models work with tsv
@@ -117,6 +133,6 @@ def route_pronounce_many():
                         status=200,
                         content_type="text/tab-separated-values")
     d = request.args.get("d")
-    if d and d in grammatek_lstm.possible_dialects:
+    if d and d in GRAMMATEK_LSTM.possible_dialects:
         return jsonify(list(gen_pronounce(content["words"], d))), 200
     return jsonify(list(gen_pronounce(content["words"]))), 200
